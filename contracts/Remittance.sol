@@ -23,10 +23,9 @@ contract Remittance is Owned {
 
 		//Asserts
 		require (msg.value > 0);
-		
+		require (deposits[puzzle].value == 0, "Puzzle already set");
 		//Create new deposit
 		deposits[puzzle] = depositStruct(msg.value,now);
-
 	}	
 	
 	function getCurrentBalance ()  public view returns(uint){
