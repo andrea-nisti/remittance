@@ -38,8 +38,9 @@ contract Remittance is Owned {
 		require (deposits[hashish].value > 0);
 
 		//Transfer amount
+		deposits[hashish].value = 0;
 		msg.sender.transfer(deposits[hashish].value);
-		deposits[hashish].value;
+		
 		return hashish;		
 	}
 
