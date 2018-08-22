@@ -28,7 +28,7 @@ contract Remittance is Owned {
 		deposits[puzzle] = DepositStruct(msg.value,now);
 	}	
 	
-	function giveMeMoney (string pass1, string pass2) public returns(bytes32 res){
+	function giveMeMoney (string pass1, string pass2) public returns(bool res){
 		
 		bytes32 hashish = UtilsLib.getKekka(pass1,pass2);
 		require (deposits[hashish].value > 0);
@@ -37,7 +37,7 @@ contract Remittance is Owned {
 		deposits[hashish].value = 0;
 		msg.sender.transfer(deposits[hashish].value);
 		
-		return hashish;		
+		return true;		
 	}
 
 }
