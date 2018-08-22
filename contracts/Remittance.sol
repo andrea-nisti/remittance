@@ -28,10 +28,6 @@ contract Remittance is Owned {
 		deposits[puzzle] = DepositStruct(msg.value,now);
 	}	
 	
-	function getCurrentBalance ()  public view returns(uint){
-		return address(this).balance;
-	}
-
 	function giveMeMoney (string pass1, string pass2) public returns(bytes32 res){
 		
 		bytes32 hashish = UtilsLib.getKekka(pass1,pass2);
