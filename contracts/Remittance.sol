@@ -10,12 +10,12 @@ contract Owned {
 
 contract Remittance is Owned {
 
-	struct depositStruct {
+	struct DepositStruct {
 		uint    value;
 	 	uint256 time;
 	}
 	
-	mapping (bytes32 => depositStruct) public deposits;
+	mapping (bytes32 => DepositStruct) public deposits;
 	
 	constructor () public  {}
 	
@@ -25,7 +25,7 @@ contract Remittance is Owned {
 		require (msg.value > 0);
 		require (deposits[puzzle].value == 0, "Puzzle already set");
 		//Create new deposit
-		deposits[puzzle] = depositStruct(msg.value,now);
+		deposits[puzzle] = DepositStruct(msg.value,now);
 	}	
 	
 	function getCurrentBalance ()  public view returns(uint){
