@@ -22,9 +22,9 @@ contract Remittance is Owned {
 		//Create new deposit
 		deposits[puzzle] = DepositStruct(msg.value,now,exchangeAddr);
 	}
-	
+
 	function giveMeMoney (string pass1, string pass2) public returns(bool res){
-				
+		
 		bytes32 hashish = UtilsLib.getKekka(pass1,pass2);
 		require (deposits[hashish].value > 0);
 		require (msg.sender == deposits[hashish].exchangeAddr);
