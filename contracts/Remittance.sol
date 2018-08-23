@@ -1,12 +1,6 @@
 pragma solidity ^0.4.23;
 import "./UtilsLib.sol";
-
-contract Owned {
-	address public owner = msg.sender;
-	event OwnerChanged(address indexed old, address indexed current);
-	modifier only_owner { require(msg.sender == owner); _;}
-	//function setOwner(address _newOwner) only_owner public { OwnerChanged(owner, _newOwner); owner = _newOwner; }
-}
+import "./Owned.sol";
 
 contract Remittance is Owned {
 
@@ -20,13 +14,13 @@ contract Remittance is Owned {
 	
 	constructor () public  {}
 	
-	function deposit(bytes32 puzzle, ) public payable  only_owner{
+	function deposit(bytes32 puzzle, address exchangeAddr) public payable  only_owner{
 
 		//Requires
 		require (msg.value > 0);
 		require (deposits[puzzle].value == 0, "Puzzle already set");
 		//Create new deposit
-		deposits[puzzle] = DepositStruct(msg.value,now);
+		deposits[puzzle] = DepositStruct(msg.value,now,exchangeAddr);
 	}
 	
 	function giveMeMoney (string pass1, string pass2) public returns(bool res){
@@ -36,8 +30,9 @@ contract Remittance is Owned {
 		require (msg.sender == deposits[hashish].exchangeAddr);
 
 		//Transfer amount
+		uint tAmount = deposits[hashish].value;
 		deposits[hashish].value = 0;
-		msg.sender.transfer(deposits[hashish].value);
+		msg.sender.transfer(tAmount);
 		
 		return true;		
 	}
