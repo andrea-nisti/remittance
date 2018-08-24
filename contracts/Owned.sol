@@ -2,7 +2,7 @@ pragma solidity ^0.4.23;
 
 contract Owned {
 	address public owner;
-	constructor () {
+	constructor () public{
 		owner = msg.sender;
 	}
 	event OwnerChanged(address indexed old, address indexed current);
