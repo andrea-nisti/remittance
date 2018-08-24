@@ -4,7 +4,7 @@ import "./Owned.sol";
 contract Remittance is Owned {
 
 	struct DepositStruct {
-		uint    value;
+		uint value;
 	 	uint time;
 	 	address exchangeAddr;
 	}
