@@ -1,5 +1,4 @@
 pragma solidity ^0.4.23;
-import "./UtilsLib.sol";
 import "./Owned.sol";
 
 contract Remittance is Owned {
@@ -31,7 +30,7 @@ contract Remittance is Owned {
 		
 		uint tAmount      = deposits[hashish].value;
 		address tExchange = deposits[hashish].exchangeAddr;
-		bytes32 hashish   = UtilsLib.getKekka(pass1,pass2);
+		bytes32 hashish   = giveMyHash(pass1,pass2);
 		
 		require (tAmount > 0);
 		require (msg.sender == tExchange);
@@ -43,10 +42,15 @@ contract Remittance is Owned {
 		
 		return true;		
 	}
+	function giveMyHash (string pass1, string pass2) public pure returns(bytes32 hash) {
+
+		return keccak256(abi.encodePacked(pass1, pass2));
+		
+	}
 
 	//Stop switch
 	function killMe() public {
-    	assert(msg.sender == owner);
+    	require(msg.sender == owner);
     	selfdestruct(owner);
     }
 
