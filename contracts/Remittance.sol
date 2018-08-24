@@ -5,7 +5,7 @@ contract Remittance is Owned {
 
 	struct DepositStruct {
 		uint    value;
-	 	uint256 time;
+	 	uint time;
 	 	address exchangeAddr;
 	}
 	
