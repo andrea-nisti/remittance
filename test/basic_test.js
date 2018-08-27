@@ -23,7 +23,7 @@ contract('Remittance test', accounts => {
         .then(res => 
             {
                 puzzle = res;
-                return instance.deposit.sendTransaction(puzzle, accounts[2],{ from: accounts[0], value: web3.toWei(amount,"ether")});
+                return instance.deposit(puzzle, accounts[2],{ from: accounts[0], value: web3.toWei(amount,"ether")});
             });
 
     });
