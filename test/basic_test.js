@@ -16,9 +16,11 @@ contract('Remittance test', accounts => {
 
 
     it("should check the correct chain of events", function() {
-        console.log(instance.address);
+
         let puzzle;
         let amount = 5;
+
+
         return instance.giveMyHash.call("cane","gatto")
         .then(res => 
             {
@@ -28,11 +30,37 @@ contract('Remittance test', accounts => {
         .then(txObj =>
             {
                 assert.equal(txObj.logs.length,1);
-                assert.equal(txObj.logs[0].args.value, web3.toWei(amount,"ether"));
+                assert.equal(txObj.logs[0].args.amount, web3.toWei(amount,"ether"));
                 assert.equal(txObj.logs[0].args.puzzle, puzzle);
+                return instance.giveMeMoney("cane","gatto",{ from: accounts[2]});
+            })
+        .then(txObj =>
+            {
+                assert.equal(txObj.logs.length,1);
+                assert.equal(txObj.logs[0].args.amount, web3.toWei(amount,"ether"));
             })
 
+
+    });
+
+    it("should check the wrong chain of events",async function() {
+    
+        let amount = 5;   
+        let puzzle = await instance.giveMyHash.call("cane","gatto");
+        let tx     = await instance.deposit(puzzle,3600, accounts[2],{ from: accounts[0], value: web3.toWei(amount,"ether")});
+       
+        assert.equal(tx.logs.length,1);
+        assert.equal(tx.logs[0].args.amount, web3.toWei(amount,"ether"));
+        assert.equal(tx.logs[0].args.puzzle, puzzle);
+       
+        try{
+            await instance.giveMeMoney("cane2","gatto",{ from: accounts[2]});
+        }catch(err){
+            assert("You got: " + err);
+            return;
+        }
+        assert.fail("You didn't catch the error");
+        
     });
         
 });
-        

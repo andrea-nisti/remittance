@@ -15,7 +15,7 @@ contract Remittance is Owned {
 	constructor () public  {}
 
 	//Events
-	event LogNewDeposit(bytes32 puzzle, uint value);
+	event LogNewDeposit(bytes32 puzzle, uint amount);
 	event LogNewWithdraw(address withdrawAddr, uint amount);
 	
 	//Create a new deposit
