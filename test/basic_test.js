@@ -19,7 +19,7 @@ contract('Remittance test', accounts => {
         console.log(instance.address);
         let puzzle;
         let amount = 5;
-        return instance.giveMyHash.call("cane","gatto");
+        return instance.giveMyHash.call("cane","gatto")
         .then(res => 
             {
                 puzzle = res;
