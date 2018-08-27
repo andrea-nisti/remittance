@@ -23,8 +23,14 @@ contract('Remittance test', accounts => {
         .then(res => 
             {
                 puzzle = res;
-                return instance.deposit(puzzle, accounts[2],{ from: accounts[0], value: web3.toWei(amount,"ether")});
-            });
+                return instance.deposit(puzzle,3600, accounts[2],{ from: accounts[0], value: web3.toWei(amount,"ether")});
+            })
+        .then(txObj =>
+            {
+                assert.equal(txObj.logs.length,1);
+                assert.equal(txObj.logs[0].args.value, web3.toWei(amount,"ether"));
+                assert.equal(txObj.logs[0].args.puzzle, puzzle);
+            })
 
     });
         

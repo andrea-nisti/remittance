@@ -11,6 +11,12 @@ module.exports = {
       port: 8545,
       network_id: 42,
       gas: 1000000
+    },
+    net17: {
+      host: "localhost",
+      port: 8545,
+      network_id: 17,
+      gas: 1000000
     }
   },
   solc: {
