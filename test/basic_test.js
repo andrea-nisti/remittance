@@ -54,11 +54,14 @@ contract('Remittance test', accounts => {
         assert.equal(tx.logs[0].args.puzzle, puzzle);
        
         try{
-            await instance.giveMeMoney("cane2","gatto",{ from: accounts[2]});
+            await instance.giveMeMoney("cane","gato",{ from: accounts[2]});
         }catch(err){
+            console.log("You got: " + err);
             assert("You got: " + err);
             return;
         }
+        //It doesn't  print the assert message..
+        console.log("You didn't catch the error");
         assert.fail("You didn't catch the error");
         
     });
