@@ -20,18 +20,19 @@ contract('Remittance test', accounts => {
         let puzzle;
         let amount = 5;
 
-
         return instance.giveMyHash.call("cane","gatto")
         .then(res => 
             {
                 puzzle = res;
-                return instance.deposit(puzzle,3600, accounts[2],{ from: accounts[0], value: web3.toWei(amount,"ether")});
+                console.log("Creating a new deposit");
+                return instance.deposit(puzzle, 3600, accounts[2],{ from: accounts[0], value: web3.toWei(amount,"ether")});
             })
         .then(txObj =>
             {
                 assert.equal(txObj.logs.length,1);
                 assert.equal(txObj.logs[0].args.amount, web3.toWei(amount,"ether"));
                 assert.equal(txObj.logs[0].args.puzzle, puzzle);
+                console.log("Taking money..");
                 return instance.giveMeMoney("cane","gatto",{ from: accounts[2]});
             })
         .then(txObj =>
