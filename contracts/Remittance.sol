@@ -18,7 +18,7 @@ contract Remittance is Stoppable(true) {
 
     //Events
     event LogNewDeposit(bytes32 puzzle, uint amount, uint deadline,address who);
-    event LogNewWithdraw(address withdrawAddr, uint amount, bytes32 puzzle);
+    event LogNewWithdraw(bytes32 puzzle, uint amount, address who);
            
     //Create a new deposit
     function deposit(bytes32 puzzle, uint deadline) public payable isRunning returns(bool res) {
@@ -51,7 +51,7 @@ contract Remittance is Stoppable(true) {
     
         //Transfer amount
         delete deposits[hashish];
-        emit LogNewWithdraw(msg.sender, tAmount, hashish);
+        emit LogNewWithdraw(hashish, tAmount, msg.sender);
         msg.sender.transfer(tAmount);
         
         return true;        
@@ -77,7 +77,7 @@ contract Remittance is Stoppable(true) {
         require (isExpired(puzzle));        
     
         delete deposits[puzzle];
-        emit LogNewWithdraw(tSender, tAmount, puzzle);
+        emit LogNewWithdraw(puzzle, tAmount, tSender);
         msg.sender.transfer(tAmount);
         return true;        
     }
