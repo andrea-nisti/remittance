@@ -78,7 +78,7 @@ contract Remittance is Stoppable(true) {
     
         delete deposits[puzzle];
         emit LogNewWithdraw(puzzle, tAmount, tSender);
-        msg.sender.transfer(tAmount);
+        tSender.transfer(tAmount);
         return true;        
     }
 
