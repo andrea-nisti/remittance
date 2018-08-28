@@ -1,7 +1,7 @@
 pragma solidity ^0.4.23;
 import "./Stoppable.sol";
 
-contract Remittance is Stoppable(true) {
+contract Remittance is Stoppable {
 
     struct DepositStruct {
         uint amount;
@@ -14,7 +14,7 @@ contract Remittance is Stoppable(true) {
 
     bool running;
     
-    constructor () public  {}
+    constructor () Stoppable(true) public {}
 
     //Events
     event LogNewDeposit(bytes32 puzzle, uint amount, uint deadline,address who);
