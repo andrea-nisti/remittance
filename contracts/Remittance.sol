@@ -7,7 +7,6 @@ contract Remittance is Stoppable {
         uint amount;
         uint deadline;
         address sender;
-        address exchangeAddr;
     }
     
     mapping (bytes32 => DepositStruct) public deposits;
@@ -22,7 +21,7 @@ contract Remittance is Stoppable {
     event LogNewWithdraw(address withdrawAddr, uint amount);
            
     //Create a new deposit
-    function deposit(bytes32 puzzle, uint deadline, address exchangeAddr) public payable isRunning {
+    function deposit(bytes32 puzzle, uint deadline) public payable isRunning {
 
         //Requires
         require (msg.value > 0);
@@ -35,34 +34,31 @@ contract Remittance is Stoppable {
         deposits[puzzle] = DepositStruct({
             amount:       msg.value,
             deadline:     deadline + now,
-            sender:       msg.sender,
-            exchangeAddr: exchangeAddr
+            sender:       msg.sender
         });
     }
 
     //withdraw your eth, fuction used by the exchanger
     function giveMeMoney (string pass1, string pass2) public isRunning returns(bool res){
         
-        bytes32 hashish   = giveMyHash(pass1,pass2);
+        bytes32 hashish   = giveMyHash(pass1,pass2, msg.sender);
         require (!isExpired(hashish), "Your deposit is expired");
-        uint tAmount      = deposits[hashish].amount;
-        address tExchange = deposits[hashish].exchangeAddr;
+        uint tAmount = deposits[hashish].amount;
         
         require (tAmount > 0, "Error fetching the deposit");
-        require (msg.sender == tExchange, "Only the exchanger can take the money, sorry");
-
+    
         //Transfer amount
         delete deposits[hashish];
-        emit LogNewWithdraw(tExchange, tAmount);
+        emit LogNewWithdraw(msg.sender, tAmount);
         msg.sender.transfer(tAmount);
         
         return true;        
     }
 
     //Returns the puzzle
-    function giveMyHash (string pass1, string pass2) public view returns(bytes32 hash) {
+    function giveMyHash (string pass1, string pass2, address exchangeAddr) public view returns(bytes32 hash) {
 
-        return keccak256(abi.encodePacked(pass1, pass2, address(this)));
+        return keccak256(abi.encodePacked(pass1, pass2, address(this), exchangeAddr));
         
     }
 
