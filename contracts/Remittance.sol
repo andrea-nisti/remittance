@@ -59,9 +59,7 @@ contract Remittance is Stoppable(true) {
 
     //Returns the puzzle
     function giveMyHash (string pass1, string pass2, address exchangeAddr) public view returns(bytes32 hash) {
-
         return keccak256(abi.encodePacked(pass1, pass2, address(this), exchangeAddr));
-        
     }
 
     //We compare with block time, not really precise but it's ok for now
@@ -72,14 +70,14 @@ contract Remittance is Stoppable(true) {
     //When the deadline is over, give the amount back to the sender
     function giveMeMoneyBack (bytes32 puzzle) public isRunning returns(bool res){
         uint tAmount   = deposits[puzzle].amount;
-
-        require (deposits[puzzle].sender == msg.sender);
+        address tSender = deposits[puzzle].sender;
+        
+        require (tSender == msg.sender);
         require (tAmount > 0);
         require (isExpired(puzzle));        
-        
-        
+    
         delete deposits[puzzle];
-        emit LogNewWithdraw(sender, tAmount);
+        emit LogNewWithdraw(tSender, tAmount);
         msg.sender.transfer(tAmount);
         return true;        
     }
