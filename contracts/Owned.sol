@@ -7,11 +7,11 @@ contract Owned {
 	}
 	event OwnerChanged(address indexed old, address indexed current);
 	
-	modifier only_owner { 
+	modifier onlyOwner { 
 		require(msg.sender == owner);
 		 _;
 	}
-	function setOwner(address _newOwner) only_owner public {
+	function setOwner(address _newOwner) onlyOwner public {
 		emit OwnerChanged(owner, _newOwner); 
 		owner = _newOwner; 
 	}

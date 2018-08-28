@@ -3,24 +3,30 @@ import "./Owned.sol";
 
 contract Stoppable is Owned {
 	
-	bool running;
-    constructor () public  {
-    	running = true;
+	bool private running;
+
+	event LogOnSwitchChange(address who, bool actualState);
+    constructor (bool initialState) public  {
+    	running = initialState;
     }
-    event LogOnSwitchChange(address who, bool actualState);
+    
     //Mods
     modifier isRunning() { 
         require (running); 
         _; 
     }
+    modifier isNotRunning() { 
+        require (!running); 
+        _; 
+    }
     //Soft switches, define two different functions for user-friendliness
-    function startSwitch() public only_owner returns(bool res){
+    function startSwitch() public onlyOwner returns(bool res){
         require(!running);
         running = true;
         emit LogOnSwitchChange(owner, running);
         return true;
     }
-    function stopSwitch() public only_owner returns(bool res){
+    function stopSwitch() public onlyOwner returns(bool res){
         require(running);
         running = false;
         emit LogOnSwitchChange(owner, running);

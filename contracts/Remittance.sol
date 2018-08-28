@@ -1,7 +1,7 @@
 pragma solidity ^0.4.23;
 import "./Stoppable.sol";
 
-contract Remittance is Stoppable {
+contract Remittance is Stoppable(true) {
 
     struct DepositStruct {
         uint amount;
@@ -17,18 +17,18 @@ contract Remittance is Stoppable {
     constructor () public  {}
 
     //Events
-    event LogNewDeposit(bytes32 puzzle, uint amount, address who);
+    event LogNewDeposit(bytes32 puzzle, uint amount, uint deadline,address who);
     event LogNewWithdraw(address withdrawAddr, uint amount);
            
     //Create a new deposit
-    function deposit(bytes32 puzzle, uint deadline) public payable isRunning {
+    function deposit(bytes32 puzzle, uint deadline) public payable isRunning returns(bool res) {
 
         //Requires
         require (msg.value > 0);
         require (!usedPuzzles[puzzle]);
         
         //Create new deposit
-        emit LogNewDeposit(puzzle, msg.value, msg.sender);
+        emit LogNewDeposit(puzzle, msg.value,deadline, msg.sender);
         usedPuzzles[puzzle] = true;
         
         deposits[puzzle] = DepositStruct({
@@ -36,6 +36,8 @@ contract Remittance is Stoppable {
             deadline:     deadline + now,
             sender:       msg.sender
         });
+
+        return true;
     }
 
     //withdraw your eth, fuction used by the exchanger
@@ -69,12 +71,12 @@ contract Remittance is Stoppable {
 
     //When the deadline is over, give the amount back to the sender
     function giveMeMoneyBack (bytes32 puzzle) public isRunning returns(bool res){
-        
-        require (deposits[puzzle].amount > 0);
-        require (isExpired(puzzle));        
         uint tAmount   = deposits[puzzle].amount;
-        address sender = deposits[puzzle].sender;
-        require (deposits[puzzle].sender == sender);
+
+        require (deposits[puzzle].sender == msg.sender);
+        require (tAmount > 0);
+        require (isExpired(puzzle));        
+        
         
         delete deposits[puzzle];
         emit LogNewWithdraw(sender, tAmount);
@@ -83,8 +85,7 @@ contract Remittance is Stoppable {
     }
 
     //Stop switch
-    function killMe() public isRunning {
-        require(msg.sender == owner);
+    function killMe() public onlyOwner isNotRunning {
         selfdestruct(owner);
     }
 
