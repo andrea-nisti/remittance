@@ -2,12 +2,13 @@ pragma solidity ^0.4.23;
 import "./Owned.sol";
 
 contract Stoppable is Owned {
-	
-	bool private running;
+    
+    bool private running;
 
-	event LogOnSwitchChange(address who, bool actualState);
+    event LogOnSwitchChange(address who, bool actualState);
+    
     constructor (bool initialState) public  {
-    	running = initialState;
+        running = initialState;
     }
     
     //Mods
@@ -19,6 +20,7 @@ contract Stoppable is Owned {
         require (!running); 
         _; 
     }
+
     //Soft switches, define two different functions for user-friendliness
     function startSwitch() public onlyOwner returns(bool res){
         require(!running);
