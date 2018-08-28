@@ -33,9 +33,9 @@ contract Remittance is Owned {
     function deposit(bytes32 puzzle, uint deadline, address exchangeAddr) public payable isRunning  only_owner{
 
         //Requires
-        require (!usedPuzzles[puzzle]);
         uint value = msg.value;
         require (value > 0);
+        require (!usedPuzzles[puzzle]);
         require (deposits[puzzle].amount == 0, "Puzzle already set");
         
         //Create new deposit
