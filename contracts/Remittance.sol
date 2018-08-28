@@ -22,7 +22,8 @@ contract Remittance is Owned {
     //Events
     event LogNewDeposit(bytes32 puzzle, uint amount, address who);
     event LogNewWithdraw(address withdrawAddr, uint amount);
-
+    event LogOnSwitchChange(address who, bool actualState);
+    
     //Mods
     modifier isRunning() { 
         require (running); 
@@ -30,23 +31,20 @@ contract Remittance is Owned {
     }
     
     //Create a new deposit
-    function deposit(bytes32 puzzle, uint deadline, address exchangeAddr) public payable isRunning  only_owner{
+    function deposit(bytes32 puzzle, uint deadline, address exchangeAddr) public payable isRunning {
 
         //Requires
-        uint value = msg.value;
-        require (value > 0);
+        require (msg.value > 0);
         require (!usedPuzzles[puzzle]);
-        require (deposits[puzzle].amount == 0, "Puzzle already set");
         
         //Create new deposit
-        address sender = msg.sender;
-        emit LogNewDeposit(puzzle, value, sender);
+        emit LogNewDeposit(puzzle, msg.value, msg.sender);
         usedPuzzles[puzzle] = true;
         
         deposits[puzzle] = DepositStruct({
-            amount:       value,
+            amount:       msg.value,
             deadline:     deadline,
-            sender:       sender,
+            sender:       msg.sender,
             exchangeAddr: exchangeAddr
         });
     }
@@ -55,6 +53,7 @@ contract Remittance is Owned {
     function giveMeMoney (string pass1, string pass2) public isRunning returns(bool res){
         
         bytes32 hashish   = giveMyHash(pass1,pass2);
+        require (!isExpired(hashish));
         uint tAmount      = deposits[hashish].amount;
         address tExchange = deposits[hashish].exchangeAddr;
         
@@ -62,7 +61,7 @@ contract Remittance is Owned {
         require (msg.sender == tExchange);
 
         //Transfer amount
-        deposits[hashish].amount = 0;
+        delete deposits[puzzle];
         emit LogNewWithdraw(tExchange, tAmount);
         msg.sender.transfer(tAmount);
         
@@ -72,12 +71,12 @@ contract Remittance is Owned {
     //Returns the puzzle
     function giveMyHash (string pass1, string pass2) public pure returns(bytes32 hash) {
 
-        return keccak256(abi.encodePacked(pass1, pass2));
+        return keccak256(abi.encodePacked(pass1, pass2, address(this)));
         
     }
 
     //We compare with block time, not really precise but it's ok for now
-    function isExpired(bytes32 puzzle)public view returns(bool res){
+    function isExpired(bytes32 puzzle) public view returns(bool res){
         return block.timestamp >= deposits[puzzle].deadline;
     }
 
@@ -90,8 +89,7 @@ contract Remittance is Owned {
         address sender = deposits[puzzle].sender;
         require (deposits[puzzle].sender == sender);
         
-        deposits[puzzle].amount = 0;
-
+        delete deposits[puzzle];
         emit LogNewWithdraw(sender, tAmount);
         msg.sender.transfer(tAmount);
         return true;        
@@ -104,16 +102,16 @@ contract Remittance is Owned {
     }
 
     //Soft switches, define two different functions for user-friendliness
-    function startSwitch() public returns(bool res){
-        require(msg.sender == owner);
+    function startSwitch() public only_owner returns(bool res){
         require(!running);
         running = true;
+        emit LogOnSwitchChange(owner, running);
         return true;
     }
-    function stopSwitch() public returns(bool res){
-        require(msg.sender == owner);
+    function stopSwitch() public only_owner returns(bool res){
         require(running);
         running = false;
+        emit LogOnSwitchChange(owner, running);
         return true;
     }
 }       
