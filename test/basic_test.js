@@ -89,5 +89,30 @@ contract('Remittance test', accounts => {
         assert.fail("You didn't catch the error");
         
     });
+    it("should check the soft switches",async function() {
+    
+        let amount = 5;   
+        let puzzle = await instance.giveMyHash.call("cane","gatto");
+        let tx     = await instance.deposit(puzzle,3600, accounts[2],{ from: accounts[0], value: web3.toWei(amount,"ether")});
+       
+        //Here we check running == true
+        assert.equal(tx.logs.length,1);
+        assert.equal(tx.logs[0].args.amount, web3.toWei(amount,"ether"));
+        assert.equal(tx.logs[0].args.puzzle, puzzle);
+        
+        //Perform a deposit and expect a throw
+        await instance.stopSwitch({from: accounts[0]});
+        try{
+            await instance.deposit(puzzle,3600, accounts[2],{ from: accounts[0], value: web3.toWei(amount,"ether")});
+        }catch(err){
+            console.log("You got: " + err);
+            assert("You got: " + err);
+            return;
+        }
+        //It doesn't  print the assert message..
+        console.log("You didn't catch the error");
+        assert.fail("You didn't catch the error");
+        
+    });
         
 });

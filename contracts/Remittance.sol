@@ -4,7 +4,7 @@ import "./Owned.sol";
 contract Remittance is Owned {
 
 	struct DepositStruct {
-		uint value;
+		uint amount;
 	 	uint deadline;
 	 	address sender;
 	 	address exchangeAddr;
@@ -12,38 +12,55 @@ contract Remittance is Owned {
 	
 	mapping (bytes32 => DepositStruct) public deposits;
 	mapping (bytes32 => bool) private usedPuzzles;
+
+	bool running;
 	
-	constructor () public  {}
+	constructor () public  {
+		running = true;
+	}
 
 	//Events
 	event LogNewDeposit(bytes32 puzzle, uint amount);
 	event LogNewWithdraw(address withdrawAddr, uint amount);
+
+	//Mods
+	modifier isRunning() { 
+		require (running); 
+		_; 
+	}
+	
 	
 	//Create a new deposit
-	function deposit(bytes32 puzzle, uint deadline, address exchangeAddr) public payable  only_owner{
+	function deposit(bytes32 puzzle, uint deadline, address exchangeAddr) public payable isRunning  only_owner{
 
 		//Requires
 		require (!usedPuzzles[puzzle]);
 		require (msg.value > 0);
-		require (deposits[puzzle].value == 0, "Puzzle already set");
+		require (deposits[puzzle].amount == 0, "Puzzle already set");
 		//Create new deposit
 		emit LogNewDeposit(puzzle, msg.value);
 		usedPuzzles[puzzle] = true;
-		deposits[puzzle] = DepositStruct(msg.value, now + deadline, msg.sender, exchangeAddr);
+		
+		deposits[puzzle] = DepositStruct({
+    		amount:       msg.value,
+    		deadline:     deadline,
+    		sender:       msg.sender,
+    		exchangeAddr: exchangeAddr
+		});
 	}
 
 	//withdraw your eth, fuction used by the exchanger
-	function giveMeMoney (string pass1, string pass2) public returns(bool res){
+	function giveMeMoney (string pass1, string pass2) public isRunning returns(bool res){
 		
 		bytes32 hashish   = giveMyHash(pass1,pass2);
-		uint tAmount      = deposits[hashish].value;
+		uint tAmount      = deposits[hashish].amount;
 		address tExchange = deposits[hashish].exchangeAddr;
 		
 		require (tAmount > 0);
 		require (msg.sender == tExchange);
 
 		//Transfer amount
-		deposits[hashish].value = 0;
+		deposits[hashish].amount = 0;
 		emit LogNewWithdraw(tExchange, tAmount);
 		msg.sender.transfer(tAmount);
 		
@@ -59,25 +76,19 @@ contract Remittance is Owned {
 
 	//We compare with block time, not really precise but it's ok for now
 	function isExpired(bytes32 puzzle)public view returns(bool res){
-	
-		require (deposits[puzzle].value > 0);
-		
-		if (block.timestamp >= deposits[puzzle].deadline)
-        	return true;
-
-        return false;
-
+        return block.timestamp >= deposits[puzzle].deadline;
 	}
 
 	//When the deadline is over, give the amount back to the sender
-	function giveMeMoneyBack (bytes32 puzzle) public returns(bool res){
+	function giveMeMoneyBack (bytes32 puzzle) public isRunning returns(bool res){
 		
+		require (deposits[puzzle].amount > 0);
 		require (isExpired(puzzle));		
-		uint tAmount   = deposits[puzzle].value;
+		uint tAmount   = deposits[puzzle].amount;
 		address sender = deposits[puzzle].sender;
 		require (deposits[puzzle].sender == sender);
 		
-		deposits[puzzle].value = 0;
+		deposits[puzzle].amount = 0;
 
 		emit LogNewWithdraw(sender, tAmount);
 		msg.sender.transfer(tAmount);
@@ -86,9 +97,22 @@ contract Remittance is Owned {
 
 
 	//Stop switch
-	function killMe() public {
+	function killMe() public isRunning {
     	require(msg.sender == owner);
     	selfdestruct(owner);
     }
 
+    //Soft switches, define two different functions for user-friendliness
+	function startSwitch() public returns(bool res){
+    	require(msg.sender == owner);
+    	require(!running);
+    	running = true;
+    	return true;
+    }
+	function stopSwitch() public returns(bool res){
+    	require(msg.sender == owner);
+    	require(running);
+    	running = false;
+    	return true;
+    }
 }
