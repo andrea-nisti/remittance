@@ -21,22 +21,23 @@ contract Remittance is Stoppable {
     event LogNewWithdraw(bytes32 puzzle, uint amount, address who);
            
     //Create a new deposit
-    function deposit(bytes32 puzzle, uint deadline) public payable isRunning returns(bool res) {
+    function deposit(bytes32 puzzle, uint duration) public payable isRunning returns(bool res) {
 
         //Requires
         require (msg.value > 0);
         require (!usedPuzzles[puzzle]);
         
         //Create new deposit
-        emit LogNewDeposit(puzzle, msg.value,deadline, msg.sender);
         usedPuzzles[puzzle] = true;
-        
+        uint deadline = duration + now;
+
+        emit LogNewDeposit(puzzle, msg.value, deadline, msg.sender);
         deposits[puzzle] = DepositStruct({
             amount:       msg.value,
-            deadline:     deadline + now,
+            deadline:     deadline,
             sender:       msg.sender
         });
-
+       
         return true;
     }
 
@@ -69,16 +70,16 @@ contract Remittance is Stoppable {
 
     //When the deadline is over, give the amount back to the sender
     function giveMeMoneyBack (bytes32 puzzle) public isRunning returns(bool res){
-        uint tAmount   = deposits[puzzle].amount;
-        address tSender = deposits[puzzle].sender;
         
-        require (tSender == msg.sender);
+        uint tAmount   = deposits[puzzle].amount;         
+        
+        require (deposits[puzzle].sender == msg.sender);
         require (tAmount > 0);
         require (isExpired(puzzle));        
     
         delete deposits[puzzle];
-        emit LogNewWithdraw(puzzle, tAmount, tSender);
-        tSender.transfer(tAmount);
+        emit LogNewWithdraw(puzzle, tAmount, msg.sender);
+        msg.sender.transfer(tAmount);
         return true;        
     }
 
