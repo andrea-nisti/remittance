@@ -65,5 +65,29 @@ contract('Remittance test', accounts => {
         assert.fail("You didn't catch the error");
         
     });
+
+    it("should check the one-time usage of a puzzle",async function() {
+    
+        let amount = 5;   
+        let puzzle = await instance.giveMyHash.call("cane","gatto");
+        let tx     = await instance.deposit(puzzle,3600, accounts[2],{ from: accounts[0], value: web3.toWei(amount,"ether")});
+       
+        assert.equal(tx.logs.length,1);
+        assert.equal(tx.logs[0].args.amount, web3.toWei(amount,"ether"));
+        assert.equal(tx.logs[0].args.puzzle, puzzle);
+       
+        //Perform a second deposit with the same puzzle and expect a throw. Change the amount just to have "different" deposits
+        try{
+            await instance.deposit(puzzle,3600, accounts[2],{ from: accounts[0], value: web3.toWei(amount + 3,"ether")});
+        }catch(err){
+            console.log("You got: " + err);
+            assert("You got: " + err);
+            return;
+        }
+        //It doesn't  print the assert message..
+        console.log("You didn't catch the error");
+        assert.fail("You didn't catch the error");
+        
+    });
         
 });

@@ -11,6 +11,7 @@ contract Remittance is Owned {
 	}
 	
 	mapping (bytes32 => DepositStruct) public deposits;
+	mapping (bytes32 => bool) private usedPuzzles;
 	
 	constructor () public  {}
 
@@ -22,10 +23,12 @@ contract Remittance is Owned {
 	function deposit(bytes32 puzzle, uint deadline, address exchangeAddr) public payable  only_owner{
 
 		//Requires
+		require (!usedPuzzles[puzzle]);
 		require (msg.value > 0);
 		require (deposits[puzzle].value == 0, "Puzzle already set");
 		//Create new deposit
 		emit LogNewDeposit(puzzle, msg.value);
+		usedPuzzles[puzzle] = true;
 		deposits[puzzle] = DepositStruct(msg.value, now + deadline, msg.sender, exchangeAddr);
 	}
 
@@ -72,7 +75,7 @@ contract Remittance is Owned {
 		require (isExpired(puzzle));		
 		uint tAmount   = deposits[puzzle].value;
 		address sender = deposits[puzzle].sender;
-		require (deposits[puzzle].sender == msg.sender);
+		require (deposits[puzzle].sender == sender);
 		
 		deposits[puzzle].value = 0;
 
